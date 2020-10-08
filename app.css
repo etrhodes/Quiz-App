@@ -6,3 +6,14 @@
   * https://github.com/andreacardybailey/responsive_example/blob/master/styles/responsive-base.css 
   *
 */
+
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+
+body {
+  background-color: #FED141;
+}
+
+
+h1 {
+  font-family: 'Permanent Marker';
+}

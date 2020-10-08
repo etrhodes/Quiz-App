@@ -124,6 +124,7 @@ const store = {
   }
 };
 
+
 /**
  * 
  * Technical requirements:
@@ -145,87 +146,31 @@ const store = {
 
 function beginQuiz() {
   console.log('The quiz is beginning');
-return `
+let html = `
   <div class="begin-quiz">
       <p>Welcome to Gotham. Begin quiz by pressing the button.</p>
       <button id="begin-quiz">Begin Quiz</button>
   </div>
-  `
-}
-
-function questionPage() {
-  console.log('This is a question page');
-return `
-      <p class="question-number">Question <span>1</span> out of 10</p>
-      <h2 class="question">Question ${i}</h2>
-      <form class="answers">
-        <ol type="A">
-          <li>One</li>        
-          <li>Two</li>
-          <li>Three</li>
-          <li>Four</li>
-        </ol>
-      </form>
-      <button id="submit-answer">Submit Answer</button>
-
-      <p class="score">Score: <span>0</span> out of 100.</p>
-  `
-}
-
-function quizFinished() {
-  console.log('You have finished the quiz');
-  return `
-    <p>You have finished the quiz. Your score is <span>0</span>
-    <button id='restart-quiz'>Restart Quiz</button>
-  `
+  `;
+  render(html);
 }
 
 /********** RENDER FUNCTION(S) **********/
 
 // This function conditionally replaces the contents of the <main> tag based on the state of the store
 
-function render() {
-  if (store.quizStarted === false) {
-    $('main').html(beginQuiz());
-    return;
-  }
-  else if (store.quizStarted === true) {
-    $('main').html(questionPage());
-  }
+render() {
+  $('main').html() 
+
 }
 
 /********** EVENT HANDLER FUNCTIONS **********/
 
 // These functions handle events (submit, click, etc)
 
-// This function handles the start quiz button
-function handleStart() {
-  $('main').on('click','#begin-quiz', function (event) {
-    console.log('Begin Quiz');
-    store.quizStarted = true;
-    render();
-  })
-}
-
-// This function handles the click of the "Submit Answer" button
-function submitAnswer () {
-  $('main').on('click', '#submit-answer', function (event) {
-    console.log('On to the next question!');
-    render ();
-  })
-}
 
 
-
-
-
-function handleQuiz () {
-  render();
+function handleQuiz() {
   beginQuiz();
-  handleStart();
-  submitAnswer();
-  questionPage();
-
+  render();
 }
-
-$(handleQuiz);
