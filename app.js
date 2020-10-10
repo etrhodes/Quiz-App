@@ -143,8 +143,8 @@ const store = {
 
 // These functions return HTML templates
 
+//This page is the first page to start the quiz.
 function beginQuiz() {
-  console.log('The quiz is beginning');
 return `
   <div class="begin-quiz">
       <p>Welcome to Gotham. Begin quiz by pressing the button.</p>
@@ -153,30 +153,77 @@ return `
   `
 }
 
+//This page generates the question pages.
 function questionPage() {
-  console.log('This is a question page');
+  let i = store.questionNumber;
+  let currentQuestion = store.questions[i].question;
+  console.log(currentQuestion);
 return `
-      <p class="question-number">Question <span>1</span> out of 10</p>
-      <h2 class="question">Question ${i}</h2>
-      <form class="answers">
-        <ol type="A">
-          <li>One</li>        
-          <li>Two</li>
-          <li>Three</li>
-          <li>Four</li>
-        </ol>
+    <div>
+      <p class="question-number"> Question ${i + 1} out of ${store.questions.length}</p>
+      <h2 class="question">${currentQuestion}</h2>
+      <form id="question-form">
+        <div class="answers">
+          ${generateAnswersHtml()}
+        </div>
+        <button id="submit-answer">Submit Answer</button>
+        <button id="next-question">Next Question</button>
       </form>
-      <button id="submit-answer">Submit Answer</button>
-
-      <p class="score">Score: <span>0</span> out of 100.</p>
-  `
+      <div id="answer-div"></div>
+      <p class="score">Score: ${store.score} out of ${store.questions.length}.</p>
+    </div>
+  `;
 }
 
+//This function generates the list of possible answers and
+//returns an html string to place in questionPage function.
+function generateAnswersHtml() {
+  let i = 0;
+  const answersArray = store.questions[store.questionNumber].answers;
+  console.log(answersArray);
+  let answersHtml = '';
+
+  answersArray.forEach(answer => {
+    answersHtml += `
+      <div>
+        <input type="radio" name="answer" "value="${answer}" required>
+        <label for="answer-${i}">${answer}</label>
+      </div>
+    `;
+    i++;
+  });
+  return answersHtml;
+}
+
+//This function handles the html for submitted questions.
+function questionHtml(answerStatus) {
+  let html = '';
+  
+  if (answerStatus === 'correct') {
+    html = `
+    <p>That is correct!</p>
+    <p>${store.questions[store.questionNumber].caption}</p>
+    `;
+  }
+  else {
+    html = `
+    <p>That is not correct.</p>
+    <p>The correct answer is ${store.questions[store.questionNumber].correctAnswer}.</p>
+    <p>${store.questions[store.questionNumber].caption}</p>
+    `
+  }
+    return html;
+}
+
+
+//This function generates the quiz finished page.
 function quizFinished() {
   console.log('You have finished the quiz');
   return `
-    <p>You have finished the quiz. Your score is <span>0</span>
-    <button id='restart-quiz'>Restart Quiz</button>
+    <div> 
+      <p>You have finished the quiz. Your score is ${store.score}
+      <button id='restart-quiz'>Restart Quiz</button>
+    <div>
   `
 }
 
@@ -184,13 +231,18 @@ function quizFinished() {
 
 // This function conditionally replaces the contents of the <main> tag based on the state of the store
 
-function render() {
+function render() { 
   if (store.quizStarted === false) {
     $('main').html(beginQuiz());
     return;
   }
-  else if (store.quizStarted === true) {
-    $('main').html(questionPage());
+  else if (store.questionNumber >= 0 && store.questionNumber < store.questions.length) {
+    html = questionPage();
+    $('main').html(html);
+    $('#next-question').hide(true);
+  }
+  else {
+    $('main').html(quizFinished());
   }
 }
 
@@ -208,24 +260,68 @@ function handleStart() {
 }
 
 // This function handles the click of the "Submit Answer" button
-function submitAnswer () {
+function submitAnswer() {
   $('main').on('click', '#submit-answer', function (event) {
-    console.log('On to the next question!');
-    render ();
+    event.preventDefault();
+
+  //Set variable for correct answer.
+  let currentAnswer = store.questions[store.questionNumber].correctAnswer;
+  console.log(currentAnswer);
+  //Grab value of selected answer.
+  let selectedAnswer = $('form input[type="radio"][name="answer"]:checked').val();
+  console.log(selectedAnswer);
+
+  if (selectedAnswer === currentAnswer) {
+    $('#answer-div').append(questionHtml('correct'));
+    store.score++;
+  }
+  else {
+    $('#answer-div').append(questionHtml('incorrect'));
+  }
+
+  store.questionNumber++;
+  $('#submit-answer').hide();
+  $('input[type=radio]').each(() => {
+    $('input[type=radio]').attr('disabled', true);
+  });
+  $('#next-question').show();
+  });
+}
+
+//This function handles the click of the next button.
+function clickNext() {
+  $('main').on('click', '#next-question', function (event) {
+    event.preventDefault();
+    render();
   })
 }
 
+//This function handles restart of quiz
+function restartQuiz() {
+  store.quizStarted = false;
+  store.score = 0;
+  store.questionNumber = 0;
+}
 
+//This function handles the click of the "Restart Quiz" button
+function clickRestartButton() {
+  $('body').on('click','#restart-quiz', function (event) {
+    restartQuiz();
+    render();
+  })
+}
 
-
-
-function handleQuiz () {
+function handleQuiz() {
   render();
   beginQuiz();
   handleStart();
+  questionHtml();
   submitAnswer();
   questionPage();
-
+  generateAnswersHtml();
+  restartQuiz();
+  clickRestartButton();
+  clickNext();
 }
 
 $(handleQuiz);
